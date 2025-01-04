@@ -19,6 +19,9 @@ HW2
 1. 在spec中有寫道"Print out the the posterior (in log scale to avoid underflow)"，須注意由於機率的數值範圍為0\~1，取log後剛好會都是負數，在最後normalization時才會負負得正，原先有最高posterior probability的類別在normalization後數值反而會是最低的，所以在程式碼中才會寫成"predicted_label = np.argmin(log_posteriors_normalized)"；但是，在continuous mode時([Gaussian Naive Bayes](https://en.wikipedia.org/wiki/Naive_Bayes_classifier#Gaussian_naive_Bayes))，實際上是用機率密度函數的表示方式來計算posterior probability，而機率密度函數的數值範圍並不一定會是0\~1，這與剛才的假設不符，會導致有些極端情況算錯；不過在詢問助教後他說可以不用特別解決這個問題，希望之後修課的同學可以更新修正的版本XD  
 2. 在某些pixel上可能會出現variance=0的狀況，影響到後續計算，需要額外設定一個數值以避免分母為零。直覺上可能會設定一個接近零的常數，但是在高斯分布中，variance愈小，其機率密度函數的最大值愈大，可能會超過1而導致前面提過的邏輯錯誤；把variance設得太大，又會使整個高斯分布的形狀會愈趨扁平而接近於均勻分布。可以自行嘗試選擇最合適的設定。  
 
+HW3
+1. 從spec敘述來看，input的a應為高斯分布的variance，但是在上課推導和前人筆記的內容中一般將a表示為1/variance，需要注意在程式碼中變數和符號等細節差異。
+
 HW4
 1. EM演算法的分群結果會受初始值影響，不同的初始化方法會導致最後收斂到不同的分群結果。若要檢查自己的EM演算法實現流程是否寫對，可以使用strong prior(直接記錄在每個pixel上，不同類別的圖像出現"1"的總次數)來幫助驗證其餘程式碼的正確性，針對這種初始化方法，error rate大約是0.31。但前述的初始化方法相當於是在訓練時就使用了類別資訊，不符合作業要求，因此還是必須另外想出一種合適的初始化方法。一般來說，隨機初始化的error rate範圍大約落在0.4~0.6之間。  
 
@@ -26,4 +29,4 @@ HW5
 1. 最新版本的libsvm和scipy套件似乎會有衝突(參考我的report中"Observations and Discussion"章節所提及)，可以安裝舊版套件以正確執行，套件版本在report的第九頁有紀錄。  
 
 HW6
-1.
+1. 使用kernel method的核心思想是**避免直接計算(高維)feature space的feature representation**，而根據上課所推公式執行kernel kmeans演算法的話，各群在feature space中的質心位置應該會自動隱式(implicitly)變更，不需要經過計算或額外更新座標。我在參考github上其他人的寫法中常看到註解含"E step..., M step..."，會需要分成這兩個步驟是因為在一般空間中，kmeans演算法需要更新各群質心的位置(M step)，但在kernel kmeans演算法中就不應出現這種寫法。需特別注意**kernel matrix儲存的是兩點之間的similarity，而不直接儲存座標或距離等資訊**，因此諸如在一般特徵空間中，收集某個群內所有成員的座標，取mean計算質心位置之類的操作，並不能直接透過對kernel取mean來實現。
